@@ -20,6 +20,7 @@ namespace AuthServer.Controllers
     {
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
+        private readonly DSiUserManager _dsiUserManager;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IClientStore _clientStore;
@@ -33,6 +34,7 @@ namespace AuthServer.Controllers
             _clientStore = clientStore;
             _events = events;
             _signInManager = signInManager;
+            _dsiUserManager = new DSiUserManager();
         }
 
         /// <summary>
@@ -94,7 +96,19 @@ namespace AuthServer.Controllers
             {
                 // validate username/password
                 var user = await _userManager.FindByNameAsync(model.Username);
+
+                if (user == null) //try login with dsi service and register if login success
+                {
+                    user = await _dsiUserManager.CheckPasswordAsync(model.Username, model.Password);
+                    if (user != null)
+                    {
+                        await this.RegisterUser(user, model.Password);
+                    }                   
+                }
+
                 if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+                //var user = await _dsiUserManager.CheckPasswordAsync(model.Username, model.Password);
+                //if (user != null)               
                 {
                     await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.Name));
 
@@ -164,7 +178,11 @@ namespace AuthServer.Controllers
             }
 
             var user = new AppUser { UserName = model.Email, Name = model.Name, Email = model.Email };
+            var result = await this.RegisterUser(user, model.Password);
 
+            if (!result.Succeeded) return BadRequest(result.Errors);
+
+            /*
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded) return BadRequest(result.Errors);
@@ -173,8 +191,22 @@ namespace AuthServer.Controllers
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("name", user.Name));
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("email", user.Email));
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("role", Roles.Consumer));
-
+            */
             return Ok(new RegisterResponseViewModel(user));
+        }
+
+        private async Task<IdentityResult> RegisterUser(AppUser user, string password)
+        {
+            var result = await _userManager.CreateAsync(user, password);
+
+            if (!result.Succeeded) return result;
+
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("userName", user.UserName));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("name", user.Name));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("email", user.Email));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("role", Roles.Consumer));
+
+            return result;
         }
 
         [HttpGet]

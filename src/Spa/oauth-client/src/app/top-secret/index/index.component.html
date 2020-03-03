@@ -13,8 +13,8 @@
                 <tbody>
                   <tr *ngFor="let claim of claims; let i = index" [attr.data-index]="i">
                     <th scope="row">{{i}}</th>
-                    <td>{{claim.type}}</td>
-                    <td>{{claim.value}}</td>                   
+                    <td>{{claim.userName}}</td>
+                    <td>{{claim.isActive}}</td>                   
                   </tr>                 
                 </tbody>
               </table>            

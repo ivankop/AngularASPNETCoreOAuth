@@ -40,18 +40,10 @@ namespace AuthServer
 
             services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
-                // this adds the operational data from DB (codes, tokens, consents)
-                .AddOperationalStore(options =>
-                {
-                    options.ConfigureDbContext = builder => builder.UseSqlServer(Configuration.GetConnectionString("Default"));
-                    // this enables automatic token cleanup. this is optional.
-                    options.EnableTokenCleanup = true;
-                    options.TokenCleanupInterval = 30; // interval in seconds
-                })
-                //.AddInMemoryPersistedGrants()
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApiResources())
                 .AddInMemoryClients(Config.GetClients())
+                .AddTestUsers(Config.GetUsers())
                 .AddAspNetIdentity<AppUser>();
 
                 /* We'll play with this down the road... 
@@ -114,7 +106,7 @@ namespace AuthServer
 
             app.UseStaticFiles();
             app.UseCors("AllowAll");
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseIdentityServer();
 
             app.UseMvc(routes =>
