@@ -25,6 +25,7 @@ namespace AuthServer.Controllers
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IClientStore _clientStore;
         private readonly IEventService _events;
+        private readonly ADUserManager _adUserManager;
 
         public AccountController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, IIdentityServerInteractionService interaction, IAuthenticationSchemeProvider schemeProvider, IClientStore clientStore, IEventService events)
         {
@@ -35,6 +36,7 @@ namespace AuthServer.Controllers
             _events = events;
             _signInManager = signInManager;
             _dsiUserManager = new DSiUserManager();
+            _adUserManager = new ADUserManager();
         }
 
         /// <summary>
@@ -100,6 +102,11 @@ namespace AuthServer.Controllers
                 if (user == null) //try login with dsi service and register if login success
                 {
                     user = await _dsiUserManager.CheckPasswordAsync(model.Username, model.Password);
+                    if (user == null)
+                    {
+                        user = _adUserManager.CheckPasswordAsync(model.Username, model.Password);
+                    }
+
                     if (user != null)
                     {
                         await this.RegisterUser(user, model.Password);

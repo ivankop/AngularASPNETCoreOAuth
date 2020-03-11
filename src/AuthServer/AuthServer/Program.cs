@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-
+using System.IO;
 
 namespace AuthServer
 {
@@ -9,11 +9,23 @@ namespace AuthServer
         public static void Main(string[] args)
         {
             CreateWebHostBuilder(args).Build().Run();
+            //var host = new WebHostBuilder()
+            //        .UseKestrel()
+            //        //.UseUrls("http://localhost:5000")
+            //        .UseContentRoot(Directory.GetCurrentDirectory())
+            //        .UseIISIntegration()
+            //        .UseStartup<Startup>()
+            //        .Build();
+            //host.Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .UseUrls("http://localhost:5000");
+                    //.UseKestrel()
+                    .UseUrls("http://localhost:5000")
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseIISIntegration()
+                    .UseStartup<Startup>()
+                    ;
     }
 }

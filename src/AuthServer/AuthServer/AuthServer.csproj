@@ -7,6 +7,7 @@
 
 
   <ItemGroup>
+    <PackageReference Include="IdentityServer.LdapExtension" Version="2.1.29" />
     <PackageReference Include="IdentityServer4" Version="3.0.1" />
     <PackageReference Include="IdentityServer4.AspNetIdentity" Version="3.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.0.0" />
@@ -14,6 +15,7 @@
     <PackageReference Include="RestSharp" Version="106.10.1" />
     <PackageReference Include="serilog.extensions.logging" Version="3.0.1" />
     <PackageReference Include="serilog.sinks.file" Version="4.0.0" />
+    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="4.7.0" />
   </ItemGroup>
 
 

@@ -1,6 +1,8 @@
 ﻿using AuthServer.Extensions;
 using AuthServer.Infrastructure.Data.Identity;
 using AuthServer.Infrastructure.Services;
+using IdentityServer.LdapExtension.Extensions;
+using IdentityServer.LdapExtension.UserModel;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
@@ -44,17 +46,18 @@ namespace AuthServer
                 .AddInMemoryApiResources(Config.GetApiResources())
                 .AddInMemoryClients(Config.GetClients())
                 .AddTestUsers(Config.GetUsers())
-                .AddAspNetIdentity<AppUser>();
+                .AddAspNetIdentity<AppUser>()
+                ;//.AddLdapUsers<OpenLdapAppUser>(Configuration.GetSection("DSiADConfigurationSection"), UserStore.InMemory);
 
-                /* We'll play with this down the road... 
-                    services.AddAuthentication()
-                    .AddGoogle("Google", options =>
-                    {
-                        options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+            /* We'll play with this down the road... 
+                services.AddAuthentication()
+                .AddGoogle("Google", options =>
+                {
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
 
-                        options.ClientId = "<insert here>";
-                        options.ClientSecret = "<insert here>";
-                    });*/
+                    options.ClientId = "<insert here>";
+                    options.ClientSecret = "<insert here>";
+                });*/
 
             services.AddTransient<IProfileService, IdentityClaimsProfileService>();
 
@@ -66,6 +69,12 @@ namespace AuthServer
             {
                 options.EnableEndpointRouting = false;
             }).SetCompatibilityVersion(CompatibilityVersion.Latest);
+
+            services.Configure<IISOptions>(iis =>
+            {
+                iis.AuthenticationDisplayName = "Windows";
+                iis.AutomaticAuthentication = false;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
