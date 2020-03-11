@@ -20,7 +20,7 @@ namespace AuthServer.Controllers
             try
             {
                 bool valid = false;
-                using (var context = new PrincipalContext(ContextType.Domain, "MYDOMAIN"))
+                using (var context = new PrincipalContext(ContextType.Domain, "testdsimobile"))
                 {
                     valid = context.ValidateCredentials(username, password);
                     if (valid)

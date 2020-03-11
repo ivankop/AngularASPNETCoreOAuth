@@ -3,6 +3,7 @@ using AuthServer.Infrastructure.Data.Identity;
 using AuthServer.Infrastructure.Services;
 using IdentityServer.LdapExtension.Extensions;
 using IdentityServer.LdapExtension.UserModel;
+using IdentityServer4;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
@@ -15,6 +16,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Net;
  
@@ -70,11 +73,30 @@ namespace AuthServer
                 options.EnableEndpointRouting = false;
             }).SetCompatibilityVersion(CompatibilityVersion.Latest);
 
-            services.Configure<IISOptions>(iis =>
-            {
-                iis.AuthenticationDisplayName = "Windows";
-                iis.AutomaticAuthentication = false;
-            });
+            //services.Configure<IISOptions>(iis =>
+            //{
+            //    iis.AuthenticationDisplayName = "Windows";
+            //    iis.AutomaticAuthentication = false;
+            //});
+
+            services.AddAuthentication()
+               .AddOpenIdConnect("aad", "Azure AD", options =>
+               {
+                   options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                   options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+
+                   options.Authority = "https://login.windows.net/24e2cf9b-2b6a-48bb-80fc-0ad769c08c8e";
+                   options.ClientId = "a47bf874-f95a-465f-a494-83593eba87e2";
+                   options.ResponseType = OpenIdConnectResponseType.IdToken;
+                   options.CallbackPath = "/signin-aad";
+                   options.SignedOutCallbackPath = "/signout-callback-aad";
+                   options.RemoteSignOutPath = "/signout-aad";
+                   options.TokenValidationParameters = new TokenValidationParameters
+                   {
+                       NameClaimType = "name",
+                       RoleClaimType = "role"
+                   };
+               });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
